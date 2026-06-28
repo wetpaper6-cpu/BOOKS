@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>기분/상황 책 추천</title>
+<style>
+  :root{
+    --bg:#faf7f2; --card:#ffffff; --ink:#2b2620; --muted:#8a8074;
+    --accent:#b9542c; --accent-soft:#f4e3d6; --line:#e8e0d4;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    background:var(--bg); color:var(--ink); padding:32px 20px;
+  }
+  .wrap{max-width:760px; margin:0 auto;}
+  h1{font-size:24px; margin:0 0 6px;}
+  .sub{color:var(--muted); margin:0 0 28px; font-size:14px;}
+  .section{margin-bottom:24px;}
+  .section h2{font-size:14px; color:var(--muted); margin:0 0 10px; font-weight:600;}
+  .chips{display:flex; flex-wrap:wrap; gap:8px;}
+  .chip{
+    padding:7px 14px; border-radius:999px; border:1px solid var(--line);
+    background:var(--card); font-size:13px; cursor:pointer; user-select:none;
+    transition:all .15s;
+  }
+  .chip:hover{border-color:var(--accent);}
+  .chip.active{background:var(--accent); border-color:var(--accent); color:#fff;}
+  .actions{display:flex; gap:10px; margin:28px 0;}
+  button.primary{
+    background:var(--accent); color:#fff; border:none; padding:12px 22px;
+    border-radius:10px; font-size:15px; font-weight:600; cursor:pointer;
+  }
+  button.primary:hover{background:#9c4422;}
+  button.ghost{
+    background:transparent; color:var(--muted); border:1px solid var(--line);
+    padding:12px 18px; border-radius:10px; font-size:14px; cursor:pointer;
+  }
+  #results{display:flex; flex-direction:column; gap:14px;}
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:18px 20px; display:flex; gap:16px; align-items:flex-start;
+  }
+  .rank{
+    width:30px; height:30px; border-radius:50%; background:var(--accent-soft);
+    color:var(--accent); font-weight:700; font-size:14px; display:flex;
+    align-items:center; justify-content:center; flex-shrink:0; margin-top:2px;
+  }
+  .card .title{font-size:16px; font-weight:700; margin:0 0 2px;}
+  .card .meta{font-size:12px; color:var(--muted); margin:0 0 8px;}
+  .card .why{font-size:13.5px; line-height:1.55; margin:0;}
+  .tag-row{margin-top:10px; display:flex; gap:6px; flex-wrap:wrap;}
+  .tag{font-size:11px; background:var(--accent-soft); color:var(--accent); padding:2px 8px; border-radius:6px;}
+  .empty{color:var(--muted); font-size:14px; text-align:center; padding:30px 0;}
+  .badge-src{
+    display:inline-block; font-size:11px; color:var(--muted); border:1px solid var(--line);
+    border-radius:6px; padding:3px 8px; margin-bottom:18px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>오늘 어떤 책이 좋을까요</h1>
+  <p class="sub">지금 기분과 상황을 골라주시면 그에 맞는 책 3권을 추천해드려요.</p>
+  <span class="badge-src">데이터 소스: mock (국립중앙도서관 API 키 발급 전 임시 데이터)</span>
+
+  <div class="section">
+    <h2>지금 기분은</h2>
+    <div class="chips" id="mood-chips"></div>
+  </div>
+
+  <div class="section">
+    <h2>지금 상황은</h2>
+    <div class="chips" id="situation-chips"></div>
+  </div>
+
+  <div class="actions">
+    <button class="primary" id="recommend-btn">책 추천받기</button>
+    <button class="ghost" id="reset-btn">초기화</button>
+  </div>
+
+  <div id="results"></div>
+</div>
+
+<script>
+const BOOKS =
+[
+  {"title": "아몬드", "author": "손원평", "publisher": "창비", "pubYear": "2017", "kdc_name": "한국소설", "isbn": "9788936434267", "image": "", "detailLink": "", "mood_tags": ["슬픔", "공감", "위로"], "situation_tags": ["이별 후", "혼자 있는 시간"], "one_liner": "감정을 느끼지 못하는 소년의 성장을 통해 공감이란 무엇인지 잔잔하게 묻는다."},
+  {"title": "달까지 가자", "author": "장류진", "publisher": "창비", "pubYear": "2019", "kdc_name": "한국소설", "isbn": "9788936437855", "image": "", "detailLink": "", "mood_tags": ["스트레스", "공감"], "situation_tags": ["출퇴근", "직장생활"], "one_liner": "월급쟁이의 고단함과 작은 희망을 가볍게 풀어내 출퇴근길에 읽기 좋다."},
+  {"title": "흰", "author": "한강", "publisher": "난다", "pubYear": "2016", "kdc_name": "한국소설", "isbn": "9788968372196", "image": "", "detailLink": "", "mood_tags": ["슬픔", "사색"], "situation_tags": ["잠들기 전", "혼자 있는 시간"], "one_liner": "흰빛을 매개로 상실과 애도를 다룬 짧고 묵직한 산문."},
+  {"title": "소년이 온다", "author": "한강", "publisher": "창비", "pubYear": "2014", "kdc_name": "한국소설", "isbn": "9788936434120", "image": "", "detailLink": "", "mood_tags": ["슬픔", "분노"], "situation_tags": ["혼자 있는 시간"], "one_liner": "역사의 무게를 담담히 기록해 마음을 묵직하게 흔든다."},
+  {"title": "불편한 편의점", "author": "김호연", "publisher": "나무옆의자", "pubYear": "2021", "kdc_name": "한국소설", "isbn": "9791161571188", "image": "", "detailLink": "", "mood_tags": ["위로", "무기력"], "situation_tags": ["퇴근길", "잠들기 전"], "one_liner": "사소한 친절이 쌓여 만드는 따뜻한 회복의 서사."},
+  {"title": "여행의 이유", "author": "김영하", "publisher": "문학동네", "pubYear": "2019", "kdc_name": "한국에세이", "isbn": "9788954672970", "image": "", "detailLink": "", "mood_tags": ["설렘", "사색"], "situation_tags": ["여행", "비행기/기차"], "one_liner": "왜 떠나는가에 대한 작가 특유의 담백한 통찰."},
+  {"title": "걷는 사람, 하정우", "author": "하정우", "publisher": "문학동네", "pubYear": "2018", "kdc_name": "한국에세이", "isbn": "9788954671935", "image": "", "detailLink": "", "mood_tags": ["무기력", "위로"], "situation_tags": ["산책", "스트레스 해소"], "one_liner": "걷기라는 단순한 행위로 일상을 회복하는 법을 전한다."},
+  {"title": "지구 끝의 온실", "author": "김초엽", "publisher": "자이언트북스", "pubYear": "2021", "kdc_name": "SF소설", "isbn": "9791190846035", "image": "", "detailLink": "", "mood_tags": ["희망", "사색"], "situation_tags": ["주말", "혼자 있는 시간"], "one_liner": "디스토피아 이후에도 피어나는 생명에 대한 SF적 상상력."},
+  {"title": "우리가 빛의 속도로 갈 수 없다면", "author": "김초엽", "publisher": "허블", "pubYear": "2019", "kdc_name": "SF소설", "isbn": "9791190090018", "image": "", "detailLink": "", "mood_tags": ["사색", "그리움"], "situation_tags": ["잠들기 전", "비행기/기차"], "one_liner": "단편마다 다른 결의 그리움을 SF로 섬세하게 그린다."},
+  {"title": "보건교사 안은영", "author": "정세랑", "publisher": "민음사", "pubYear": "2015", "kdc_name": "한국소설", "isbn": "9788937473491", "image": "", "detailLink": "", "mood_tags": ["유쾌함", "설렘"], "situation_tags": ["주말", "기분전환"], "one_liner": "유쾌한 판타지로 가볍게 웃으며 읽을 수 있다."},
+  {"title": "시선으로부터,", "author": "정세랑", "publisher": "문학동네", "pubYear": "2020", "kdc_name": "한국소설", "isbn": "9788954672963", "image": "", "detailLink": "", "mood_tags": ["위로", "그리움"], "situation_tags": ["가족과 함께", "명절"], "one_liner": "여러 인물의 시선을 통해 가족과 기억을 따뜻하게 엮는다."},
+  {"title": "혼모노", "author": "성해나", "publisher": "창비", "pubYear": "2024", "kdc_name": "한국소설", "isbn": "9788936438432", "image": "", "detailLink": "", "mood_tags": ["사색", "공감"], "situation_tags": ["혼자 있는 시간"], "one_liner": "정체성과 진짜다움을 둘러싼 동시대적 질문을 던진다."},
+  {"title": "파과", "author": "구병모", "publisher": "자음과모음", "pubYear": "2013", "kdc_name": "한국소설", "isbn": "9788957075516", "image": "", "detailLink": "", "mood_tags": ["긴장감", "스트레스"], "situation_tags": ["출퇴근", "주말"], "one_liner": "늙은 살인청부업자의 이야기를 빠른 호흡으로 그린 스릴러."},
+  {"title": "진짜 사나이", "author": "이기호", "publisher": "현대문학", "pubYear": "2016", "kdc_name": "한국소설", "isbn": "9788972756857", "image": "", "detailLink": "", "mood_tags": ["유쾌함"], "situation_tags": ["출퇴근"], "one_liner": "웃음 속에 짠한 페이소스를 담은 단편들."},
+  {"title": "아가미", "author": "구병모", "publisher": "위즈덤하우스", "pubYear": "2011", "kdc_name": "한국소설", "isbn": "9788960863714", "image": "", "detailLink": "", "mood_tags": ["슬픔", "사색"], "situation_tags": ["잠들기 전"], "one_liner": "경계에 선 존재의 슬픔을 환상적 문체로 풀어낸다."},
+  {"title": "1cm 인문학", "author": "김상현", "publisher": "21세기북스", "pubYear": "2018", "kdc_name": "인문에세이", "isbn": "9788950970432", "image": "", "detailLink": "", "mood_tags": ["위로", "사색"], "situation_tags": ["출퇴근", "잠들기 전"], "one_liner": "짧은 호흡의 글로 하루를 다독여주는 인문 에세이."},
+  {"title": "참 괜찮은 죽음", "author": "케이틀린 도티", "publisher": "반비", "pubYear": "2020", "kdc_name": "에세이", "isbn": "9788968330691", "image": "", "detailLink": "", "mood_tags": ["사색", "위로"], "situation_tags": ["혼자 있는 시간"], "one_liner": "죽음을 정면으로 다루며 오히려 삶을 가볍게 만들어준다."},
+  {"title": "어떻게 살 것인가", "author": "유시민", "publisher": "생각의길", "pubYear": "2013", "kdc_name": "에세이", "isbn": "9788992918720", "image": "", "detailLink": "", "mood_tags": ["사색", "혼란"], "situation_tags": ["인생 전환기"], "one_liner": "삶의 방향을 고민할 때 곁에 두기 좋은 담백한 에세이."},
+  {"title": "마음의 발걸음", "author": "알랭 드 보통", "publisher": "은행나무", "pubYear": "2020", "kdc_name": "에세이", "isbn": "9788956609129", "image": "", "detailLink": "", "mood_tags": ["사색", "평온"], "situation_tags": ["여행", "산책"], "one_liner": "걷기와 풍경을 통해 마음을 들여다보는 사색적 여행기."},
+  {"title": "여행의 기쁨", "author": "알랭 드 보통", "publisher": "청미래", "pubYear": "2011", "kdc_name": "에세이", "isbn": "9788992493364", "image": "", "detailLink": "", "mood_tags": ["설렘", "사색"], "situation_tags": ["여행", "비행기/기차"], "one_liner": "여행의 본질에 대한 철학적이고도 유쾌한 통찰."},
+  {"title": "고도를 기다리며", "author": "사뮈엘 베케트", "publisher": "민음사", "pubYear": "2000", "kdc_name": "희곡", "isbn": "9788937460414", "image": "", "detailLink": "", "mood_tags": ["무기력", "사색"], "situation_tags": ["혼자 있는 시간"], "one_liner": "부조리극의 고전, 기다림이라는 행위 자체를 곱씹게 한다."},
+  {"title": "이방인", "author": "알베르 카뮈", "publisher": "민음사", "pubYear": "2011", "kdc_name": "프랑스소설", "isbn": "9788937460309", "image": "", "detailLink": "", "mood_tags": ["무기력", "혼란"], "situation_tags": ["혼자 있는 시간", "잠들기 전"], "one_liner": "삶의 부조리를 건조한 문체로 그린 실존주의 고전."},
+  {"title": "데미안", "author": "헤르만 헤세", "publisher": "민음사", "pubYear": "2000", "kdc_name": "독일소설", "isbn": "9788937460193", "image": "", "detailLink": "", "mood_tags": ["혼란", "성장"], "situation_tags": ["인생 전환기", "잠들기 전"], "one_liner": "자기 자신이 되는 길에 대한 성장소설의 정수."},
+  {"title": "수레바퀴 아래서", "author": "헤르만 헤세", "publisher": "민음사", "pubYear": "2001", "kdc_name": "독일소설", "isbn": "9788937460537", "image": "", "detailLink": "", "mood_tags": ["슬픔", "공감"], "situation_tags": ["공부/시험기간"], "one_liner": "성과 중심 교육에 짓눌린 소년의 이야기, 시험기간에 묘하게 공감된다."},
+  {"title": "변신", "author": "프란츠 카프카", "publisher": "민음사", "pubYear": "1998", "kdc_name": "독일소설", "isbn": "9788937460087", "image": "", "detailLink": "", "mood_tags": ["불안", "혼란"], "situation_tags": ["혼자 있는 시간"], "one_liner": "벌레로 변한 그레고르를 통해 소외와 불안을 그린다."},
+  {"title": "어린 왕자", "author": "앙투안 드 생텍쥐페리", "publisher": "열린책들", "pubYear": "2015", "kdc_name": "프랑스소설", "isbn": "9788932912062", "image": "", "detailLink": "", "mood_tags": ["위로", "그리움"], "situation_tags": ["잠들기 전", "여행"], "one_liner": "짧지만 마음을 정화시키는 어른을 위한 동화."},
+  {"title": "노르웨이의 숲", "author": "무라카미 하루키", "publisher": "민음사", "pubYear": "2017", "kdc_name": "일본소설", "isbn": "9788937473057", "image": "", "detailLink": "", "mood_tags": ["그리움", "슬픔"], "situation_tags": ["이별 후", "잠들기 전"], "one_liner": "상실과 청춘의 우울을 특유의 정서로 그려낸다."},
+  {"title": "상실의 시대", "author": "무라카미 하루키", "publisher": "문학사상", "pubYear": "2000", "kdc_name": "일본소설", "isbn": "9788970125609", "image": "", "detailLink": "", "mood_tags": ["그리움", "슬픔"], "situation_tags": ["이별 후"], "one_liner": "노르웨이의 숲의 다른 번역본, 상실의 정서를 곱씹게 한다."},
+  {"title": "1Q84", "author": "무라카미 하루키", "publisher": "문학동네", "pubYear": "2009", "kdc_name": "일본소설", "isbn": "9788954615724", "image": "", "detailLink": "", "mood_tags": ["몽환", "긴장감"], "situation_tags": ["주말", "장기 여행"], "one_liner": "현실과 다른 세계가 겹쳐지는 방대한 이야기, 긴 호흡으로 읽기 좋다."},
+  {"title": "달리기를 말할 때 내가 하고 싶은 이야기", "author": "무라카미 하루키", "publisher": "문학사상", "pubYear": "2009", "kdc_name": "에세이", "isbn": "9788970125579", "image": "", "detailLink": "", "mood_tags": ["평온", "동기부여"], "situation_tags": ["운동/산책"], "one_liner": "꾸준함에 대한 작가의 태도가 잔잔한 동기를 준다."},
+  {"title": "달팽이 식당", "author": "오가와 이토", "publisher": "북폴리오", "pubYear": "2010", "kdc_name": "일본소설", "isbn": "9788901106395", "image": "", "detailLink": "", "mood_tags": ["위로", "평온"], "situation_tags": ["퇴근길", "잠들기 전"], "one_liner": "음식과 위로가 만나는 따뜻한 치유 소설."},
+  {"title": "카모메 식당", "author": "무레 요코", "publisher": "은행나무", "pubYear": "2008", "kdc_name": "일본소설", "isbn": "9788956601566", "image": "", "detailLink": "", "mood_tags": ["평온", "위로"], "situation_tags": ["여행", "퇴근길"], "one_liner": "낯선 곳에서 천천히 자리를 잡아가는 이야기가 마음을 편안하게 한다."},
+  {"title": "츠바키 문구점", "author": "오가와 이토", "publisher": "위즈덤하우스", "pubYear": "2017", "kdc_name": "일본소설", "isbn": "9791165341288", "image": "", "detailLink": "", "mood_tags": ["위로", "평온"], "situation_tags": ["잠들기 전", "퇴근길"], "one_liner": "편지를 대신 써주는 일을 통해 사람과 사람을 잇는 잔잔한 이야기."},
+  {"title": "한밤중 베이커리", "author": "오가와 이토", "publisher": "예담", "pubYear": "2014", "kdc_name": "일본소설", "isbn": "9788959131589", "image": "", "detailLink": "", "mood_tags": ["위로", "평온"], "situation_tags": ["잠들기 전"], "one_liner": "한밤중에 펼쳐지는 조용한 회복의 이야기."},
+  {"title": "나미야 잡화점의 기적", "author": "히가시노 게이고", "publisher": "현대문학", "pubYear": "2012", "kdc_name": "일본소설", "isbn": "9788972756468", "image": "", "detailLink": "", "mood_tags": ["감동", "희망"], "situation_tags": ["가족과 함께", "잠들기 전"], "one_liner": "시간을 넘나드는 편지들이 서로를 구원하는 따뜻한 미스터리."},
+  {"title": "용의자 X의 헌신", "author": "히가시노 게이고", "publisher": "재인", "pubYear": "2006", "kdc_name": "일본소설", "isbn": "9788992706311", "image": "", "detailLink": "", "mood_tags": ["긴장감", "그리움"], "situation_tags": ["출퇴근", "주말"], "one_liner": "헌신과 트릭이 절묘하게 얽힌 추리소설의 명작."},
+  {"title": "백야행", "author": "히가시노 게이고", "publisher": "재인", "pubYear": "2008", "kdc_name": "일본소설", "isbn": "9788992706120", "image": "", "detailLink": "", "mood_tags": ["긴장감", "어둠"], "situation_tags": ["주말", "장기 여행"], "one_liner": "어둠 속에서 서로를 향해 걷는 두 사람의 긴 추적기."},
+  {"title": "남쪽으로 튀어!", "author": "오쿠다 히데오", "publisher": "은행나무", "pubYear": "2006", "kdc_name": "일본소설", "isbn": "9788956601481", "image": "", "detailLink": "", "mood_tags": ["유쾌함", "해방감"], "situation_tags": ["여행", "주말"], "one_liner": "통제에서 벗어나려는 가족의 유쾌하고 자유분방한 모험."},
+  {"title": "인간 실격", "author": "다자이 오사무", "publisher": "민음사", "pubYear": "2004", "kdc_name": "일본소설", "isbn": "9788937460728", "image": "", "detailLink": "", "mood_tags": ["슬픔", "무기력"], "situation_tags": ["혼자 있는 시간", "잠들기 전"], "one_liner": "자기 파괴적 우울을 가감 없이 드러낸 고전."},
+  {"title": "설국", "author": "가와바타 야스나리", "publisher": "민음사", "pubYear": "2002", "kdc_name": "일본소설", "isbn": "9788937460612", "image": "", "detailLink": "", "mood_tags": ["사색", "고요"], "situation_tags": ["여행", "기차/비행기"], "one_liner": "눈 덮인 풍경 속 정서를 섬세하게 그린 노벨문학상 작가의 대표작."},
+  {"title": "노인과 바다", "author": "어니스트 헤밍웨이", "publisher": "민음사", "pubYear": "2012", "kdc_name": "미국소설", "isbn": "9788937460835", "image": "", "detailLink": "", "mood_tags": ["의지", "고독"], "situation_tags": ["무기력할 때", "혼자 있는 시간"], "one_liner": "포기하지 않는 의지를 짧고 강렬하게 보여주는 고전."},
+  {"title": "위대한 개츠비", "author": "F. 스콧 피츠제럴드", "publisher": "민음사", "pubYear": "2010", "kdc_name": "미국소설", "isbn": "9788937460668", "image": "", "detailLink": "", "mood_tags": ["그리움", "허무"], "situation_tags": ["여름", "주말"], "one_liner": "화려함 뒤에 숨은 공허와 그리움을 그린 미국문학의 정수."},
+  {"title": "앵무새 죽이기", "author": "하퍼 리", "publisher": "열린책들", "pubYear": "2015", "kdc_name": "미국소설", "isbn": "9788932917432", "image": "", "detailLink": "", "mood_tags": ["감동", "사색"], "situation_tags": ["혼자 있는 시간"], "one_liner": "정의와 성장을 다룬 묵직하고 따뜻한 고전."},
+  {"title": "참을 수 없는 존재의 가벼움", "author": "밀란 쿤데라", "publisher": "민음사", "pubYear": "2009", "kdc_name": "체코소설", "isbn": "9788937460552", "image": "", "detailLink": "", "mood_tags": ["사색", "혼란"], "situation_tags": ["인생 전환기"], "one_liner": "존재와 사랑의 무게를 철학적으로 풀어낸 작품."},
+  {"title": "죄와 벌", "author": "표도르 도스토옙스키", "publisher": "민음사", "pubYear": "2012", "kdc_name": "러시아소설", "isbn": "9788937460902", "image": "", "detailLink": "", "mood_tags": ["불안", "사색"], "situation_tags": ["장기 여행", "주말"], "one_liner": "죄의식과 구원을 깊게 파고드는 대문호의 대표작."},
+  {"title": "안나 카레니나", "author": "레프 톨스토이", "publisher": "민음사", "pubYear": "2009", "kdc_name": "러시아소설", "isbn": "9788937460910", "image": "", "detailLink": "", "mood_tags": ["슬픔", "사색"], "situation_tags": ["장기 여행"], "one_liner": "사랑과 사회적 굴레를 둘러싼 대서사."},
+  {"title": "이반 일리치의 죽음", "author": "레프 톨스토이", "publisher": "창비", "pubYear": "2012", "kdc_name": "러시아소설", "isbn": "9788936460105", "image": "", "detailLink": "", "mood_tags": ["사색", "허무"], "situation_tags": ["혼자 있는 시간"], "one_liner": "죽음 앞에서 삶을 돌아보는 짧고 강렬한 중편."},
+  {"title": "오만과 편견", "author": "제인 오스틴", "publisher": "민음사", "pubYear": "2003", "kdc_name": "영국소설", "isbn": "9788937460224", "image": "", "detailLink": "", "mood_tags": ["설렘", "유쾌함"], "situation_tags": ["주말", "휴가"], "one_liner": "재치 있는 대화와 로맨스가 즐거운 고전 연애소설."},
+  {"title": "제인 에어", "author": "샬럿 브론테", "publisher": "민음사", "pubYear": "2004", "kdc_name": "영국소설", "isbn": "9788937460309", "image": "", "detailLink": "", "mood_tags": ["의지", "그리움"], "situation_tags": ["인생 전환기"], "one_liner": "독립적인 여성 주인공의 성장과 사랑을 그린 고전."},
+  {"title": "1984", "author": "조지 오웰", "publisher": "민음사", "pubYear": "2003", "kdc_name": "영국소설", "isbn": "9788937460777", "image": "", "detailLink": "", "mood_tags": ["불안", "긴장감"], "situation_tags": ["출퇴근", "주말"], "one_liner": "감시사회에 대한 섬뜩하면서도 묵직한 경고."},
+  {"title": "동물농장", "author": "조지 오웰", "publisher": "민음사", "pubYear": "1998", "kdc_name": "영국소설", "isbn": "9788937460071", "image": "", "detailLink": "", "mood_tags": ["풍자", "사색"], "situation_tags": ["출퇴근"], "one_liner": "짧지만 날카로운 정치적 풍자 우화."},
+  {"title": "멋진 신세계", "author": "올더스 헉슬리", "publisher": "문예출판사", "pubYear": "1998", "kdc_name": "영국소설", "isbn": "9788931002264", "image": "", "detailLink": "", "mood_tags": ["불안", "사색"], "situation_tags": ["주말"], "one_liner": "행복이 통제되는 사회에 대한 디스토피아 고전."},
+  {"title": "셜록 홈즈 시리즈", "author": "아서 코난 도일", "publisher": "황금가지", "pubYear": "2002", "kdc_name": "영국소설", "isbn": "9788982732885", "image": "", "detailLink": "", "mood_tags": ["흥미", "긴장감"], "situation_tags": ["출퇴근", "비행기/기차"], "one_liner": "짧은 단편으로 끊어 읽기 좋은 추리소설의 원조."},
+  {"title": "그리고 아무도 없었다", "author": "애거사 크리스티", "publisher": "황금가지", "pubYear": "2013", "kdc_name": "영국소설", "isbn": "9788982737195", "image": "", "detailLink": "", "mood_tags": ["긴장감", "몰입"], "situation_tags": ["주말", "휴가"], "one_liner": "고립된 섬에서 벌어지는 완벽한 구성의 추리극."},
+  {"title": "해리 포터와 마법사의 돌", "author": "J.K. 롤링", "publisher": "문학수첩", "pubYear": "2019", "kdc_name": "영국소설", "isbn": "9788983927209", "image": "", "detailLink": "", "mood_tags": ["설렘", "모험"], "situation_tags": ["휴가", "주말"], "one_liner": "마법 같은 모험으로 일상의 스트레스를 잊게 해준다."},
+  {"title": "호빗", "author": "J.R.R. 톨킨", "publisher": "씨앗을뿌리는사람", "pubYear": "2002", "kdc_name": "영국소설", "isbn": "9788985739672", "image": "", "detailLink": "", "mood_tags": ["모험", "설렘"], "situation_tags": ["여행", "휴가"], "one_liner": "작은 영웅의 큰 모험, 여행 떠나는 기분을 더해준다."},
+  {"title": "어떻게 죽을 것인가", "author": "아툴 가완디", "publisher": "부키", "pubYear": "2015", "kdc_name": "에세이", "isbn": "9788960515886", "image": "", "detailLink": "", "mood_tags": ["사색", "위로"], "situation_tags": ["인생 전환기"], "one_liner": "삶의 마지막을 다루며 오히려 지금의 삶을 돌아보게 한다."},
+  {"title": "사피엔스", "author": "유발 하라리", "publisher": "김영사", "pubYear": "2015", "kdc_name": "인문교양", "isbn": "9788934972464", "image": "", "detailLink": "", "mood_tags": ["흥미", "지적자극"], "situation_tags": ["장기 여행", "주말"], "one_liner": "인류 역사를 큰 그림으로 조망하는 베스트셀러 교양서."},
+  {"title": "팩트풀니스", "author": "한스 로슬링", "publisher": "김영사", "pubYear": "2019", "kdc_name": "교양과학", "isbn": "9788934976772", "image": "", "detailLink": "", "mood_tags": ["희망", "지적자극"], "situation_tags": ["출퇴근"], "one_liner": "세상에 대한 막연한 비관을 데이터로 바로잡아준다."},
+  {"title": "코스모스", "author": "칼 세이건", "publisher": "사이언스북스", "pubYear": "2006", "kdc_name": "교양과학", "isbn": "9788983711892", "image": "", "detailLink": "", "mood_tags": ["경이로움", "사색"], "situation_tags": ["잠들기 전", "밤"], "one_liner": "우주를 향한 시선이 일상의 고민을 작게 만들어준다."},
+  {"title": "이기적 유전자", "author": "리처드 도킨스", "publisher": "을유문화사", "pubYear": "2018", "kdc_name": "교양과학", "isbn": "9788932473144", "image": "", "detailLink": "", "mood_tags": ["지적자극"], "situation_tags": ["공부/시험기간"], "one_liner": "생명과 진화를 보는 시각을 바꿔주는 과학 고전."},
+  {"title": "침묵의 봄", "author": "레이첼 카슨", "publisher": "에코리브르", "pubYear": "2011", "kdc_name": "교양과학", "isbn": "9788958281414", "image": "", "detailLink": "", "mood_tags": ["경각심", "사색"], "situation_tags": ["주말"], "one_liner": "환경 문제의 시작점이 된 묵직한 고전 논픽션."},
+  {"title": "미움받을 용기", "author": "기시미 이치로, 고가 후미타케", "publisher": "인플루엔셀", "pubYear": "2014", "kdc_name": "심리에세이", "isbn": "9788996991034", "image": "", "detailLink": "", "mood_tags": ["불안", "위로"], "situation_tags": ["인간관계 고민"], "one_liner": "아들러 심리학으로 관계의 무게를 가볍게 풀어준다."},
+  {"title": "죽음의 수용소에서", "author": "빅터 프랭클", "publisher": "청아출판사", "pubYear": "2020", "kdc_name": "심리에세이", "isbn": "9788936805600", "image": "", "detailLink": "", "mood_tags": ["무기력", "희망"], "situation_tags": ["인생 전환기", "혼자 있는 시간"], "one_liner": "극한의 고통 속에서도 의미를 찾는 법에 대한 통찰."},
+  {"title": "생각에 관한 생각", "author": "다니엘 카너먼", "publisher": "김영사", "pubYear": "2018", "kdc_name": "심리학", "isbn": "9788934972976", "image": "", "detailLink": "", "mood_tags": ["지적자극"], "situation_tags": ["공부/시험기간", "출퇴근"], "one_liner": "의사결정의 함정을 깨닫게 해주는 행동경제학 명저."},
+  {"title": "그릿", "author": "앤절라 더크워스", "publisher": "비즈니스북스", "pubYear": "2016", "kdc_name": "자기계발", "isbn": "9788997575668", "image": "", "detailLink": "", "mood_tags": ["동기부여", "의지"], "situation_tags": ["공부/시험기간", "인생 전환기"], "one_liner": "재능보다 끈기의 힘을 데이터로 보여주는 동기부여서."},
+  {"title": "아주 작은 습관의 힘", "author": "제임스 클리어", "publisher": "비즈니스북스", "pubYear": "2019", "kdc_name": "자기계발", "isbn": "9791165341592", "image": "", "detailLink": "", "mood_tags": ["동기부여", "무기력"], "situation_tags": ["새해/새출발", "인생 전환기"], "one_liner": "작은 습관으로 큰 변화를 만드는 구체적 방법론."},
+  {"title": "마인드셋", "author": "캐롤 드웩", "publisher": "스몰빅라이프", "pubYear": "2017", "kdc_name": "자기계발", "isbn": "9791186940176", "image": "", "detailLink": "", "mood_tags": ["동기부여", "혼란"], "situation_tags": ["공부/시험기간"], "one_liner": "성장형 사고방식이 시험과 도전 앞에서 힘이 된다."},
+  {"title": "역행자", "author": "자청", "publisher": "웅진지식하우스", "pubYear": "2023", "kdc_name": "자기계발", "isbn": "9791195930011", "image": "", "detailLink": "", "mood_tags": ["동기부여", "혼란"], "situation_tags": ["인생 전환기"], "one_liner": "현실적인 조언으로 방향을 잃었을 때 다시 잡게 해준다."},
+  {"title": "트렌드 코리아 2025", "author": "김난도 외", "publisher": "미래의창", "pubYear": "2024", "kdc_name": "경제경영", "isbn": "9791192519886", "image": "", "detailLink": "", "mood_tags": ["흥미", "지적자극"], "situation_tags": ["출퇴근", "연말연시"], "one_liner": "한 해의 흐름을 가볍게 훑어보기 좋은 트렌드서."},
+  {"title": "원숭이도 이해하는 자본론", "author": "임승수", "publisher": "시대의창", "pubYear": "2015", "kdc_name": "경제경영", "isbn": "9788959402138", "image": "", "detailLink": "", "mood_tags": ["지적자극"], "situation_tags": ["공부/시험기간"], "one_liner": "어렵게만 느껴지던 자본론을 쉽게 풀어 설명한다."},
+  {"title": "총, 균, 쇠", "author": "재레드 다이아몬드", "publisher": "문학사상", "pubYear": "2005", "kdc_name": "인문교양", "isbn": "9788970127248", "image": "", "detailLink": "", "mood_tags": ["지적자극", "흥미"], "situation_tags": ["장기 여행"], "one_liner": "문명의 불평등을 거대한 시야로 풀어내는 명저."},
+  {"title": "감정 어휘", "author": "유선경", "publisher": "앤의서재", "pubYear": "2021", "kdc_name": "에세이", "isbn": "9791190279796", "image": "", "detailLink": "", "mood_tags": ["혼란", "공감"], "situation_tags": ["혼자 있는 시간"], "one_liner": "내 감정을 정확히 부르는 법을 알려주는 위로의 글."},
+  {"title": "곰돌이 푸, 행복한 일이 너에게 생길 거야", "author": "A.A. 밀른", "publisher": "RHK", "pubYear": "2018", "kdc_name": "에세이", "isbn": "9788925562855", "image": "", "detailLink": "", "mood_tags": ["위로", "평온"], "situation_tags": ["잠들기 전", "퇴근길"], "one_liner": "짧고 다정한 문장들이 마음을 토닥여준다."},
+  {"title": "오늘 밤은 굶고 자야겠다", "author": "박상영", "publisher": "한겨레출판", "pubYear": "2020", "kdc_name": "한국에세이", "isbn": "9788984314672", "image": "", "detailLink": "", "mood_tags": ["유쾌함", "위로"], "situation_tags": ["퇴근길", "잠들기 전"], "one_liner": "솔직하고 유머러스한 일상 에세이로 가볍게 웃게 된다."},
+  {"title": "쇼코의 미소", "author": "최은영", "publisher": "문학동네", "pubYear": "2016", "kdc_name": "한국소설", "isbn": "9788954646468", "image": "", "detailLink": "", "mood_tags": ["그리움", "슬픔"], "situation_tags": ["이별 후", "혼자 있는 시간"], "one_liner": "관계의 거리와 그리움을 섬세하게 짚어내는 단편집."},
+  {"title": "밝은 밤", "author": "최은영", "publisher": "문학동네", "pubYear": "2021", "kdc_name": "한국소설", "isbn": "9788954680600", "image": "", "detailLink": "", "mood_tags": ["위로", "그리움"], "situation_tags": ["가족과 함께"], "one_liner": "여성 4대의 이야기를 통해 가족과 시간을 따뜻하게 잇는다."},
+  {"title": "82년생 김지영", "author": "조남주", "publisher": "민음사", "pubYear": "2016", "kdc_name": "한국소설", "isbn": "9788937473387", "image": "", "detailLink": "", "mood_tags": ["공감", "분노"], "situation_tags": ["직장생활", "인생 전환기"], "one_liner": "평범한 여성의 삶을 통해 사회 구조를 돌아보게 한다."},
+  {"title": "기분이 식기 전에", "author": "박정민", "publisher": "스튜디오피티", "pubYear": "2021", "kdc_name": "에세이", "isbn": "9791190706050", "image": "", "detailLink": "", "mood_tags": ["유쾌함", "위로"], "situation_tags": ["퇴근길", "잠들기 전"], "one_liner": "솔직하고 담백한 문장으로 하루의 기분을 다독인다."},
+  {"title": "지구에서 한아뿐", "author": "정세랑", "publisher": "난다", "pubYear": "2019", "kdc_name": "한국소설", "isbn": "9791188862577", "image": "", "detailLink": "", "mood_tags": ["설렘", "유쾌함"], "situation_tags": ["주말"], "one_liner": "발랄한 상상력으로 가볍게 읽기 좋은 연애 판타지."},
+  {"title": "달의 뒷면", "author": "장강명", "publisher": "민음사", "pubYear": "2020", "kdc_name": "한국소설", "isbn": "9788937473750", "image": "", "detailLink": "", "mood_tags": ["사색", "혼란"], "situation_tags": ["혼자 있는 시간"], "one_liner": "기억과 자아의 경계를 묻는 미스터리한 이야기."},
+  {"title": "한국이 싫어서", "author": "장강명", "publisher": "민음사", "pubYear": "2015", "kdc_name": "한국소설", "isbn": "9788937473219", "image": "", "detailLink": "", "mood_tags": ["혼란", "해방감"], "situation_tags": ["인생 전환기", "여행"], "one_liner": "떠나는 결심을 한 인물을 통해 삶의 선택을 돌아본다."},
+  {"title": "씨앗을 거두는 사람", "author": "베르나르 베르베르", "publisher": "열린책들", "pubYear": "2023", "kdc_name": "프랑스소설", "isbn": "9788932925017", "image": "", "detailLink": "", "mood_tags": ["흥미", "사색"], "situation_tags": ["주말"], "one_liner": "특유의 기발한 상상력으로 생각할 거리를 던져준다."},
+  {"title": "개미", "author": "베르나르 베르베르", "publisher": "열린책들", "pubYear": "2001", "kdc_name": "프랑스소설", "isbn": "9788932902957", "image": "", "detailLink": "", "mood_tags": ["흥미", "몰입"], "situation_tags": ["장기 여행", "휴가"], "one_liner": "방대한 스케일의 이야기로 긴 여행길 동반자로 좋다."},
+  {"title": "이상한 정상가족", "author": "김희경", "publisher": "동아시아", "pubYear": "2017", "kdc_name": "사회과학", "isbn": "9788962623938", "image": "", "detailLink": "", "mood_tags": ["분노", "사색"], "situation_tags": ["가족 고민"], "one_liner": "가족이라는 제도와 폭력을 정면으로 다루는 사회비평."},
+  {"title": "선량한 차별주의자", "author": "김지혜", "publisher": "창비", "pubYear": "2019", "kdc_name": "사회과학", "isbn": "9788936487706", "image": "", "detailLink": "", "mood_tags": ["사색", "경각심"], "situation_tags": ["출퇴근"], "one_liner": "일상 속 무심한 차별을 돌아보게 하는 책."},
+  {"title": "다른 의견을 가질 권리", "author": "슈테판 츠바이크", "publisher": "바오", "pubYear": "2009", "kdc_name": "교양인문", "isbn": "9788991344395", "image": "", "detailLink": "", "mood_tags": ["사색", "의지"], "situation_tags": ["혼자 있는 시간"], "one_liner": "관용과 신념의 가치를 짧지만 강렬하게 전한다."},
+  {"title": "여름이 온다", "author": "이금이", "publisher": "사계절", "pubYear": "2020", "kdc_name": "청소년소설", "isbn": "9791165702799", "image": "", "detailLink": "", "mood_tags": ["설렘", "그리움"], "situation_tags": ["여름", "여행"], "one_liner": "여름 특유의 설렘과 성장을 따뜻하게 그린 이야기."},
+  {"title": "안녕 주정뱅이", "author": "권여선", "publisher": "창비", "pubYear": "2016", "kdc_name": "한국소설", "isbn": "9788936437305", "image": "", "detailLink": "", "mood_tags": ["슬픔", "공감"], "situation_tags": ["술 한잔할 때", "혼자 있는 시간"], "one_liner": "술과 함께 흘러가는 인생의 쓸쓸함을 그린 단편집."},
+  {"title": "두근두근 내 인생", "author": "김애란", "publisher": "창비", "pubYear": "2011", "kdc_name": "한국소설", "isbn": "9788936433826", "image": "", "detailLink": "", "mood_tags": ["슬픔", "감동"], "situation_tags": ["가족과 함께"], "one_liner": "조로증을 앓는 소년의 시선으로 그린 가족과 삶에 대한 사랑."},
+  {"title": "바깥은 여름", "author": "김애란", "publisher": "문학동네", "pubYear": "2017", "kdc_name": "한국소설", "isbn": "9788954658852", "image": "", "detailLink": "", "mood_tags": ["슬픔", "사색"], "situation_tags": ["여름", "혼자 있는 시간"], "one_liner": "상실 이후의 일상을 섬세하게 포착한 단편집."},
+  {"title": "오베라는 남자", "author": "프레드릭 배크만", "publisher": "다산책방", "pubYear": "2015", "kdc_name": "스웨덴소설", "isbn": "9788963709890", "image": "", "detailLink": "", "mood_tags": ["위로", "유쾌함"], "situation_tags": ["퇴근길", "가족과 함께"], "one_liner": "괴팍한 노인의 마음이 풀려가는 과정이 따뜻한 웃음을 준다."},
+  {"title": "할머니가 미안하다고 전해달랬어요", "author": "프레드릭 배크만", "publisher": "다산책방", "pubYear": "2016", "kdc_name": "스웨덴소설", "isbn": "9791130604677", "image": "", "detailLink": "", "mood_tags": ["위로", "그리움"], "situation_tags": ["가족과 함께"], "one_liner": "할머니와 손녀의 특별한 우정을 따뜻하게 그린다."},
+  {"title": "스토너", "author": "존 윌리엄스", "publisher": "알에이치코리아", "pubYear": "2015", "kdc_name": "미국소설", "isbn": "9788925557172", "image": "", "detailLink": "", "mood_tags": ["사색", "고독"], "situation_tags": ["인생 전환기", "혼자 있는 시간"], "one_liner": "평범한 한 생애를 담담히 따라가며 깊은 울림을 남긴다."},
+  {"title": "모든 것이 산산이 부서지다", "author": "치누아 아체베", "publisher": "민음사", "pubYear": "2008", "kdc_name": "아프리카소설", "isbn": "9788937460941", "image": "", "detailLink": "", "mood_tags": ["사색", "비극"], "situation_tags": ["장기 여행"], "one_liner": "전통과 변화의 충돌을 그린 아프리카 문학의 고전."},
+  {"title": "백년의 고독", "author": "가브리엘 가르시아 마르케스", "publisher": "민음사", "pubYear": "2000", "kdc_name": "콜롬비아소설", "isbn": "9788937460230", "image": "", "detailLink": "", "mood_tags": ["몽환", "그리움"], "situation_tags": ["장기 여행", "휴가"], "one_liner": "마술적 사실주의로 한 가문의 100년을 그린 대작."},
+  {"title": "연금술사", "author": "파울로 코엘료", "publisher": "문학동네", "pubYear": "2001", "kdc_name": "브라질소설", "isbn": "9788982817551", "image": "", "detailLink": "", "mood_tags": ["희망", "설렘"], "situation_tags": ["인생 전환기", "여행"], "one_liner": "자신만의 길을 찾아가는 여정에 대한 우화적 이야기."}
+]
+;
+
+const moodSet = new Set();
+const situSet = new Set();
+BOOKS.forEach(b => {
+  (b.mood_tags||[]).forEach(t => moodSet.add(t));
+  (b.situation_tags||[]).forEach(t => situSet.add(t));
+});
+
+const selectedMoods = new Set();
+const selectedSitus = new Set();
+
+function renderChips(containerId, items, selectedSet) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+  items.forEach(tag => {
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.textContent = tag;
+    chip.addEventListener('click', () => {
+      if (selectedSet.has(tag)) { selectedSet.delete(tag); chip.classList.remove('active'); }
+      else { selectedSet.add(tag); chip.classList.add('active'); }
+    });
+    el.appendChild(chip);
+  });
+}
+
+renderChips('mood-chips', Array.from(moodSet).sort(), selectedMoods);
+renderChips('situation-chips', Array.from(situSet).sort(), selectedSitus);
+
+function score(book) {
+  let s = 0;
+  (book.mood_tags||[]).forEach(t => { if (selectedMoods.has(t)) s += 2; });
+  (book.situation_tags||[]).forEach(t => { if (selectedSitus.has(t)) s += 2; });
+  return s;
+}
+
+function recommend() {
+  const resultsEl = document.getElementById('results');
+  let pool = BOOKS.map(b => ({ book: b, score: score(b) }));
+
+  if (selectedMoods.size === 0 && selectedSitus.size === 0) {
+    pool = pool.sort(() => Math.random() - 0.5);
+  } else {
+    pool = pool.filter(p => p.score > 0);
+    if (pool.length === 0) {
+      resultsEl.innerHTML = '<div class="empty">선택한 기분/상황에 딱 맞는 책을 못 찾았어요. 다른 태그를 골라보시거나, 초기화 후 다시 시도해보세요.</div>';
+      return;
+    }
+    pool = pool.sort((a, b) => b.score - a.score);
+  }
+
+  const top = pool.slice(0, 3);
+  resultsEl.innerHTML = top.map((p, i) => {
+    const b = p.book;
+    const tags = [...(b.mood_tags||[]), ...(b.situation_tags||[])];
+    return `
+      <div class="card">
+        <div class="rank">${i+1}</div>
+        <div>
+          <p class="title">${b.title} <span style="color:var(--muted); font-weight:400; font-size:13px;">— ${b.author}</span></p>
+          <p class="meta">${b.kdc_name||''} · ${b.publisher||''} ${b.pubYear||''}</p>
+          <p class="why">${b.one_liner||''}</p>
+          <div class="tag-row">${tags.map(t => `<span class="tag">#${t}</span>`).join('')}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+document.getElementById('recommend-btn').addEventListener('click', recommend);
+document.getElementById('reset-btn').addEventListener('click', () => {
+  selectedMoods.clear(); selectedSitus.clear();
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  document.getElementById('results').innerHTML = '';
+});
+</script>
+</body>
+</html>
