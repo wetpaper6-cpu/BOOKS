@@ -1,6 +1,6 @@
 ---
 name: korean-critical-article-digest
-description: Curate today's Korean critical articles on 과거사, 진화위(진실화해위원회), 인권위(국가인권위원회), 사회연대경제 — articles that carry a clear stance, demand, or agenda, found by searching across ALL article types (not just labeled 사설/칼럼/시론/기고), including straight news reports (스트레이트 기사) that smuggle in an agenda through selective facts or framing. Only includes articles published on the same day the digest is run (not just "recent"). Use this whenever the user asks for "오늘의 비평 기사", a daily news digest on these four topics, the 5pm Korean article briefing, or otherwise wants articles with an explicit agenda rather than neutral, balanced reporting. Also use this when the user wants to set up or modify the recurring 5pm run of this digest.
+description: Curate today's Korean critical articles on 과거사, 진화위(진실화해위원회), 인권위(국가인권위원회), 사회연대경제 — articles that carry a clear stance, demand, or agenda, found by searching across ALL article types (not just labeled 사설/칼럼/시론/기고), including straight news reports (스트레이트 기사) that smuggle in an agenda through selective facts or framing. Only includes articles published on the same day the digest is run (not just "recent"). Use this whenever the user asks for "오늘의 비평 기사", a daily news digest on these four topics, the 5pm Korean article briefing, or otherwise wants articles with an explicit agenda rather than neutral, balanced reporting. Also use this when the user wants to set up or modify the recurring 5pm run of this digest, or wants the digest delivered via KakaoTalk (카카오톡).
 ---
 
 # 한국 비평 기사 다이제스트 (Korean Critical Article Digest)
@@ -100,5 +100,23 @@ description: Curate today's Korean critical articles on 과거사, 진화위(진
 이 SKILL.md 자체는 트리거 조건에 맞을 때 호출되는 것일 뿐, 정해진 시각에 스스로
 실행되지는 않는다. 매일 오후 5시(KST)에 자동으로 이 다이제스트를 만들고 싶다면
 `CronCreate`로 이 스킬을 호출하는 반복 작업을 등록해야 한다. 사용자가 자동 실행 설정을
-요청하면, 시간대(KST 기준 17:00)와 결과를 어디로 받을지(예: 대화 메시지, 파일 저장)를
-확인한 뒤 cron 작업을 만든다.
+요청하면, 시간대(KST 기준 17:00)와 결과를 어디로 받을지(예: 대화 메시지, 파일 저장,
+카카오톡)를 확인한 뒤 cron 작업을 만든다.
+
+## 카카오톡으로 전송 (선택)
+
+`mcp__PlayMCP__KakaotalkChat-MemoChat` 도구가 연결되어 있으면 다이제스트를 카카오톡
+"나에게 보내기" 메모로도 보낼 수 있다. 이 도구는 메시지당 **최대 200자**, 그리고
+나 자신에게만(다른 사람/그룹방 아님) 보낼 수 있다는 제약이 있다. 사용자가 카카오톡
+전송을 요청하면 다음 규칙을 따른다:
+
+1. 다이제스트 전체를 한 메시지에 넣지 않는다. **기사 1건 = 메시지 1건**으로 쪼갠다.
+   형식: `[의제] 제목 (매체) - 논지 한 줄 - 링크` — 전체가 200자를 넘으면 논지 요약을
+   줄여서라도 200자 이내로 맞춘다. 링크는 잘리지 않게 마지막에 두고, 그래도 넘치면
+   제목이나 논지를 줄인다.
+2. 의제에 비평성 기사가 없으면 그 의제에 대해서는 메시지를 보내지 않는다 (조용히
+   건너뛴다) — 빈 결과를 보내 메모를 어지럽히지 않는다. 단, 4개 의제 모두 기사가
+   없으면 "오늘은 4개 의제 모두 비평성 기사 없음" 한 줄만 보낸다.
+3. 메시지는 순서대로 하나씩 보낸다 (과거사 → 진화위 → 인권위 → 사회연대경제 순).
+4. 대화창에도 평소처럼 전체 다이제스트(마크다운 템플릿)를 함께 보여준다 — 카카오톡
+   전송은 추가 채널일 뿐, 대화 응답을 대체하지 않는다.
