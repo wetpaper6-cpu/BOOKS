@@ -1,6 +1,6 @@
 ---
 name: korean-critical-article-digest
-description: Curate today's Korean critical articles on 과거사, 진화위(진실화해위원회), 인권위(국가인권위원회), 사회연대경제 — articles that carry a clear stance, demand, or agenda, found by searching across ALL article types (not just labeled 사설/칼럼/시론/기고), including straight news reports (스트레이트 기사) that smuggle in an agenda through selective facts or framing. Use this whenever the user asks for "오늘의 비평 기사", a daily news digest on these four topics, the 5pm Korean article briefing, or otherwise wants articles with an explicit agenda rather than neutral, balanced reporting. Also use this when the user wants to set up or modify the recurring 5pm run of this digest.
+description: Curate today's Korean critical articles on 과거사, 진화위(진실화해위원회), 인권위(국가인권위원회), 사회연대경제 — articles that carry a clear stance, demand, or agenda, found by searching across ALL article types (not just labeled 사설/칼럼/시론/기고), including straight news reports (스트레이트 기사) that smuggle in an agenda through selective facts or framing. Only includes articles published on the same day the digest is run (not just "recent"). Use this whenever the user asks for "오늘의 비평 기사", a daily news digest on these four topics, the 5pm Korean article briefing, or otherwise wants articles with an explicit agenda rather than neutral, balanced reporting. Also use this when the user wants to set up or modify the recurring 5pm run of this digest.
 ---
 
 # 한국 비평 기사 다이제스트 (Korean Critical Article Digest)
@@ -56,16 +56,19 @@ description: Curate today's Korean critical articles on 과거사, 진화위(진
    `사회연대경제` + 오늘 날짜/최근 뉴스). 검색어를 "사설"/"칼럼" 등으로 좁히지
    않는다 — 오피니언 섹션뿐 아니라 일반 뉴스 섹션의 스트레이트 기사도 모두
    검색 대상에 포함시킨다. 필요하면 의제어 + "논란", "비판", "반발", "규탄" 같은
-   보조어를 추가해 agenda가 있는 기사를 더 잘 찾아낸다. 발행일이 오늘 또는
-   최근 1~2일 이내인 결과를 우선한다.
-2. 매체 스펙트럼을 의도적으로 섞는다 — 한쪽 논조에만 치우치지 않도록 진보/보수/중도
+   보조어를 추가해 agenda가 있는 기사를 더 잘 찾아낸다.
+2. **발행일은 반드시 오늘(다이제스트를 작성하는 날) 날짜인 기사만 포함한다.**
+   어제 이전에 나온 기사는 아무리 agenda성이 강해도 제외한다. 검색 스니펫에 날짜가
+   불명확하면 WebFetch로 기사 본문이나 메타데이터의 게재 시각을 확인해 오늘 날짜인지
+   검증한다. 날짜를 끝내 확인할 수 없는 기사는 포함하지 않는다.
+3. 매체 스펙트럼을 의도적으로 섞는다 — 한쪽 논조에만 치우치지 않도록 진보/보수/중도
    매체를 함께 살핀다 (예: 경향신문, 한겨레, 오마이뉴스, 프레시안 / 조선일보, 동아일보,
    중앙일보 / 한국일보, 서울신문, 연합뉴스 오피니언 등). 사용자가 특정 매체나 논조를
    원한다고 말한 적이 있다면 그 선호를 따른다.
-3. 의제마다 비평성 기사를 1~3건 정도 추린다. 오늘자 비평 기사가 전혀 없으면
-   억지로 사실기사를 끼워 넣지 말고 "오늘은 해당 의제의 비평성 기사를 찾지 못함"이라고
-   명시한다.
-4. 기사 링크가 깨졌거나 본문에 접근할 수 없으면 검색 스니펫 기반임을 표시한다.
+4. 의제마다 오늘 날짜의 비평성 기사를 1~3건 정도 추린다. 오늘 날짜의 비평 기사가
+   전혀 없으면 날짜를 늦추어 끼워 넣지 말고 "오늘은 해당 의제의 비평성 기사를
+   찾지 못함"이라고 명시한다.
+5. 기사 링크가 깨졌거나 본문에 접근할 수 없으면 검색 스니펫 기반임을 표시한다.
 
 ## 출력 형식
 
@@ -75,7 +78,7 @@ description: Curate today's Korean critical articles on 과거사, 진화위(진
 # 오늘의 한국 비평 기사 다이제스트 — {YYYY-MM-DD}
 
 ## 과거사
-- **{기사 제목}** ({매체}, {날짜}, {필자 있으면 표기}) — {링크}
+- **{기사 제목}** ({매체}, {오늘 날짜 — YYYY-MM-DD}, {필자 있으면 표기}) — {링크}
   논지: {글이 드러내는 agenda·입장이 무엇인지, 어떻게 드러나는지 2~3문장}
 
 ## 진화위
