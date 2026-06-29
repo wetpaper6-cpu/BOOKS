@@ -1,13 +1,18 @@
 ---
 name: korean-critical-article-digest
-description: Curate today's Korean opinion/critical articles (사설, 칼럼, 시론, 기고) on 과거사, 진화위(진실화해위원회), 인권위(국가인권위원회), 사회연대경제 — articles that take a clear stance or make a demand, not plain fact-only news reporting (스트레이트 기사). Use this whenever the user asks for "오늘의 비평 기사", a daily news digest on these four topics, the 5pm Korean article briefing, or otherwise wants opinion pieces with an explicit agenda rather than neutral summaries. Also use this when the user wants to set up or modify the recurring 5pm run of this digest.
+description: Curate today's Korean critical articles on 과거사, 진화위(진실화해위원회), 인권위(국가인권위원회), 사회연대경제 — articles that carry a clear stance, demand, or agenda, found by searching across ALL article types (not just labeled 사설/칼럼/시론/기고), including straight news reports (스트레이트 기사) that smuggle in an agenda through selective facts or framing. Use this whenever the user asks for "오늘의 비평 기사", a daily news digest on these four topics, the 5pm Korean article briefing, or otherwise wants articles with an explicit agenda rather than neutral, balanced reporting. Also use this when the user wants to set up or modify the recurring 5pm run of this digest.
 ---
 
 # 한국 비평 기사 다이제스트 (Korean Critical Article Digest)
 
 매일 정해진 시각(기본: 오후 5시, KST)에 한국 언론에서 아래 네 가지 의제에 대한
-**비평성 기사**(사실만 나열하는 보도가 아니라, 명확한 주장·평가·요구가 담긴 글)를
-찾아 정리하는 스킬이다.
+**비평성 기사**(명확한 주장·평가·요구가 담긴 글)를 찾아 정리하는 스킬이다.
+
+중요: 검색을 사설/칼럼/시론/기고 같은 "오피니언" 섹션으로 좁히지 않는다. 일반
+스트레이트(사실 보도) 기사라도 어떤 사실을 고르고 어떤 사실을 빼는지, 헤드라인과
+인용을 어떻게 배치하는지에 따라 사실상 특정 agenda를 미는 경우가 많다. 형식상
+"오피니언"이라는 라벨이 붙어 있는지가 아니라, 글이 실제로 agenda를 담고 있는지로
+판단한다.
 
 ## 고정 의제 (반드시 이 네 가지를 모두 다룰 것)
 
@@ -22,26 +27,37 @@ description: Curate today's Korean opinion/critical articles (사설, 칼럼, �
 
 ## "비평 기사" vs "단순 사실기사" 구분 기준
 
-포함할 것 (비평성 있음):
-- 사설, 칼럼, 시론, 기고, 오피니언, 데스크 칼럼 등 의견 섹션에 실린 글
-- "~해야 한다", "~는 문제다", "~를 비판한다", "~를 규탄한다", "~가 우려된다" 같이
-  필자의 평가·요구·주장이 분명한 문장이 있는 글
-- 특정 결정·정책·인물에 대해 찬성 또는 반대 입장을 분명히 밝히는 글
+섹션 라벨(사설/칼럼 vs 보도)이 아니라 글의 실제 내용으로 판단한다. 스트레이트
+기사 형식이라도 다음 중 하나에 해당하면 비평/agenda성이 있다고 본다:
 
-제외할 것 (단순 사실기사):
+포함할 것 (agenda·비평성 있음):
+- "~해야 한다", "~는 문제다", "~를 비판한다", "~를 규탄한다", "~가 우려된다" 같이
+  필자 또는 인용 인물의 평가·요구·주장이 분명한 문장이 있는 글
+- 특정 결정·정책·인물에 대해 찬성 또는 반대 입장을 분명히 밝히는 글 (사설/칼럼이든
+  스트레이트 기사든 무관)
+- 스트레이트 기사라도 한쪽 입장의 발언만 인용하거나, 특정 사실은 강조하고 반대
+  근거나 상대측 입장은 누락·축소해 사실상 특정 결론으로 독자를 이끄는 글
+  (예: 위원회 결정을 다루면서 비판 측 발언만 길게 싣고 위원회 측 반론은 한 줄로
+  처리하는 기사)
+- 헤드라인이나 리드 문단이 본문의 사실관계보다 더 단정적/선동적인 표현을 쓰는 글
+
+제외할 것 (순수 사실기사):
 - 보도자료를 그대로 옮긴 발표/일정 안내 기사
-- "OO위원회, OO일 회의 개최" 식의 사실 나열만 있는 스트레이트 기사
-- 인용문만 전달하고 필자 자신의 평가가 없는 기사
+- 양측 입장을 비슷한 비중으로 다루고 필자 자신의 평가가 없는 기사
+- "OO위원회, OO일 회의 개최" 식으로 사실만 나열하고 어느 쪽으로도 기울지 않는 기사
 
 검색 결과 스니펫만으로 판단하지 말고, 가능하면 WebFetch로 본문을 확인해서
-실제로 주장이 담겨 있는지 검증한다. 애매하면 "비평성이 약함"이라고 명시하고
-왜 그렇게 판단했는지 한 줄로 적는다.
+실제로 agenda나 편향된 프레이밍이 있는지 검증한다. 애매하면 "agenda성이 약함"이라고
+명시하고 왜 그렇게 판단했는지(예: "인용 비중이 한쪽으로 치우침") 한 줄로 적는다.
 
 ## 검색 절차
 
-1. WebSearch로 각 의제어 + ("사설" OR "칼럼" OR "시론" OR "기고" OR "오피니언")을
-   조합해 검색한다. 예: `과거사 사설`, `진화위 칼럼`, `인권위 시론`, `사회연대경제 기고`.
-   발행일이 오늘 또는 최근 1~2일 이내인 결과를 우선한다.
+1. WebSearch로 각 의제어 자체를 검색한다 (예: `과거사`, `진화위`, `인권위`,
+   `사회연대경제` + 오늘 날짜/최근 뉴스). 검색어를 "사설"/"칼럼" 등으로 좁히지
+   않는다 — 오피니언 섹션뿐 아니라 일반 뉴스 섹션의 스트레이트 기사도 모두
+   검색 대상에 포함시킨다. 필요하면 의제어 + "논란", "비판", "반발", "규탄" 같은
+   보조어를 추가해 agenda가 있는 기사를 더 잘 찾아낸다. 발행일이 오늘 또는
+   최근 1~2일 이내인 결과를 우선한다.
 2. 매체 스펙트럼을 의도적으로 섞는다 — 한쪽 논조에만 치우치지 않도록 진보/보수/중도
    매체를 함께 살핀다 (예: 경향신문, 한겨레, 오마이뉴스, 프레시안 / 조선일보, 동아일보,
    중앙일보 / 한국일보, 서울신문, 연합뉴스 오피니언 등). 사용자가 특정 매체나 논조를
@@ -60,7 +76,7 @@ description: Curate today's Korean opinion/critical articles (사설, 칼럼, �
 
 ## 과거사
 - **{기사 제목}** ({매체}, {날짜}, {필자 있으면 표기}) — {링크}
-  논지: {필자가 무엇을 비판/요구하는지 2~3문장}
+  논지: {글이 드러내는 agenda·입장이 무엇인지, 어떻게 드러나는지 2~3문장}
 
 ## 진화위
 (위와 동일한 형식)
