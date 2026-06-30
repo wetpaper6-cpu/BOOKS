@@ -320,6 +320,36 @@ def convert(md_path, out_path):
             i += 1
             continue
 
+        # ── 인용구(>) : 독자 안내·박스형 메모 ──
+        if stripped.startswith('>'):
+            note = stripped.lstrip('>').strip()
+            if not note:
+                i += 1
+                continue
+            para = doc.add_paragraph()
+            para.paragraph_format.left_indent = Cm(0.5)
+            set_para_spacing(para, before=20, after=20, line=240)
+            # 좌측 강조 테두리 + 연한 음영
+            pPr = para._p.get_or_add_pPr()
+            shd = OxmlElement('w:shd')
+            shd.set(qn('w:val'), 'clear'); shd.set(qn('w:color'), 'auto')
+            shd.set(qn('w:fill'), 'F2F5FB')
+            pPr.append(shd)
+            pBdr = OxmlElement('w:pBdr')
+            left = OxmlElement('w:left')
+            left.set(qn('w:val'), 'single'); left.set(qn('w:sz'), '18')
+            left.set(qn('w:space'), '8'); left.set(qn('w:color'), '2E4A87')
+            pBdr.append(left)
+            pPr.append(pBdr)
+            bold_inline(para, note)
+            for run in para.runs:
+                run.font.name = '맑은 고딕'
+                run._element.rPr.rFonts.set(qn('w:eastAsia'), '맑은 고딕')
+                run.font.size = Pt(10)
+                run.font.color.rgb = RGBColor(0x2E, 0x4A, 0x87)
+            i += 1
+            continue
+
         # ── 헤딩 ──
         if stripped.startswith('#### '):
             add_heading(doc, stripped[5:], 4)
