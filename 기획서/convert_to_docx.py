@@ -41,7 +41,7 @@ def bold_inline(para, text):
         else:
             para.add_run(part)
 
-BODY_PT = 15   # 기본 본문 글자 크기
+BODY_PT = 10   # 기본 본문 글자 크기
 
 def apply_run_style(run, font_name='맑은 고딕', size=BODY_PT, color=None, bold=False):
     run.font.name = font_name
@@ -118,7 +118,7 @@ def add_table(doc, rows):
                 run = para.add_run(clean)
                 run.font.name = '맑은 고딕'
                 run._element.rPr.rFonts.set(qn('w:eastAsia'), '맑은 고딕')
-                run.font.size = Pt(12)
+                run.font.size = Pt(9)
                 if is_header:
                     run.bold = True
                     run.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
@@ -136,7 +136,7 @@ def add_code_block(doc, text):
     run = para.add_run(text)
     run.font.name = 'Consolas'
     run._element.rPr.rFonts.set(qn('w:eastAsia'), '맑은 고딕')
-    run.font.size = Pt(11)
+    run.font.size = Pt(8.5)
     run.font.color.rgb = RGBColor(0x2C, 0x3E, 0x50)
     # 배경색 흉내 (단락 음영)
     pPr = para._p.get_or_add_pPr()
@@ -156,12 +156,12 @@ def add_heading(doc, text, level):
     run.font.name = '맑은 고딕'
     run._element.rPr.rFonts.set(qn('w:eastAsia'), '맑은 고딕')
     if level == 1:
-        run.font.size = Pt(20)
+        run.font.size = Pt(16)
         run.bold = True
         run.font.color.rgb = RGBColor(0x1A, 0x2E, 0x5A)
         para.alignment = WD_ALIGN_PARAGRAPH.CENTER
     elif level == 2:
-        run.font.size = Pt(17)
+        run.font.size = Pt(13)
         run.bold = True
         run.font.color.rgb = RGBColor(0x2E, 0x4A, 0x87)
         # 하단 테두리
@@ -174,11 +174,11 @@ def add_heading(doc, text, level):
         pBdr.append(bottom)
         pPr.append(pBdr)
     elif level == 3:
-        run.font.size = Pt(16)
+        run.font.size = Pt(11)
         run.bold = True
         run.font.color.rgb = RGBColor(0x2E, 0x4A, 0x87)
     else:
-        run.font.size = Pt(15)
+        run.font.size = Pt(10)
         run.bold = True
         run.font.color.rgb = RGBColor(0x1A, 0x2E, 0x5A)
 
@@ -214,16 +214,16 @@ def add_cover(doc):
 
     title1 = doc.add_paragraph()
     title1.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r = title1.add_run('AI 전환 시대 강제동원 기록 통합DB 및')
-    r.font.name = '맑은 고딕'; r.font.size = Pt(20); r.bold = True
+    r = title1.add_run('AI 전환 시대 한일 과거사 통합 디지털 아카이브')
+    r.font.name = '맑은 고딕'; r.font.size = Pt(18); r.bold = True
     r.font.color.rgb = RGBColor(0x1A, 0x2E, 0x5A)
     r._element.rPr.rFonts.set(qn('w:eastAsia'), '맑은 고딕')
     set_para_spacing(title1, before=0, after=10)
 
     title2 = doc.add_paragraph()
     title2.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r2 = title2.add_run('초국적 아카이브넷 구축 사업 기획(안)')
-    r2.font.name = '맑은 고딕'; r2.font.size = Pt(22); r2.bold = True
+    r2 = title2.add_run('「한일과거사 AI 아카이브넷」 구축 사업 기획(안)')
+    r2.font.name = '맑은 고딕'; r2.font.size = Pt(20); r2.bold = True
     r2.font.color.rgb = RGBColor(0x2E, 0x4A, 0x87)
     r2._element.rPr.rFonts.set(qn('w:eastAsia'), '맑은 고딕')
     set_para_spacing(title2, before=0, after=40)
@@ -352,7 +352,7 @@ def convert(md_path, out_path):
             run = para.add_run(clean)
             run.font.name = '맑은 고딕'
             run._element.rPr.rFonts.set(qn('w:eastAsia'), '맑은 고딕')
-            run.font.size = Pt(12)
+            run.font.size = Pt(8.5)
             run.font.color.rgb = RGBColor(0x55, 0x55, 0x55)
             run.italic = True
 
