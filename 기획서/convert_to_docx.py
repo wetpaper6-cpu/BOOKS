@@ -121,11 +121,7 @@ def add_table(doc, rows):
                 run.font.size = Pt(9)
                 if is_header:
                     run.bold = True
-                    run.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
-            if is_header:
-                set_cell_bg(cell, '2E4A87')
-            elif r_idx % 2 == 0:
-                set_cell_bg(cell, 'EEF2FA')
+            # 표는 무채색: 음영·강조색 없이 괘선만, 헤더는 굵게만 구분
     doc.add_paragraph()
 
 # ── 코드블록 처리 ─────────────────────────────────────────────
@@ -207,14 +203,14 @@ def add_hr(doc):
     set_para_spacing(para, before=60, after=60)
 
 # ── 표지 페이지 ──────────────────────────────────────────────
-def add_cover(doc):
+def add_cover(doc, title_top, title_main, meta):
     for _ in range(6):
         p = doc.add_paragraph()
         set_para_spacing(p, before=0, after=0)
 
     title1 = doc.add_paragraph()
     title1.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r = title1.add_run('AI 전환 시대 한일 과거사 통합 디지털 아카이브')
+    r = title1.add_run(title_top)
     r.font.name = '맑은 고딕'; r.font.size = Pt(18); r.bold = True
     r.font.color.rgb = RGBColor(0x1A, 0x2E, 0x5A)
     r._element.rPr.rFonts.set(qn('w:eastAsia'), '맑은 고딕')
@@ -222,7 +218,7 @@ def add_cover(doc):
 
     title2 = doc.add_paragraph()
     title2.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r2 = title2.add_run('「한일과거사 AI 아카이브넷」 구축 사업 기획(안)')
+    r2 = title2.add_run(title_main)
     r2.font.name = '맑은 고딕'; r2.font.size = Pt(20); r2.bold = True
     r2.font.color.rgb = RGBColor(0x2E, 0x4A, 0x87)
     r2._element.rPr.rFonts.set(qn('w:eastAsia'), '맑은 고딕')
@@ -234,9 +230,7 @@ def add_cover(doc):
     for _ in range(4):
         p = doc.add_paragraph(); set_para_spacing(p, 0, 0)
 
-    for label, value in [('작성일', '2026년 6월'),
-                         ('작성부서', '행정안전부 사회통합지원과'),
-                         ('비고', '내부 기획 검토용 초안')]:
+    for label, value in meta:
         p = doc.add_paragraph()
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         r = p.add_run(f'{label}: ')
@@ -251,13 +245,13 @@ def add_cover(doc):
     doc.add_page_break()
 
 # ── 메인 변환 ────────────────────────────────────────────────
-def convert(md_path, out_path):
+def convert(md_path, out_path, title_top, title_main, meta, cover_skip=10):
     with open(md_path, encoding='utf-8') as f:
         lines = f.readlines()
 
     doc = Document()
     setup_styles(doc)
-    add_cover(doc)
+    add_cover(doc, title_top, title_main, meta)
 
     i = 0
     in_code = False
@@ -271,10 +265,10 @@ def convert(md_path, out_path):
         raw = lines[i].rstrip('\n')
         stripped = raw.strip()
 
-        # ── 표지 메타 정보 스킵 (처음 10줄) ──
+        # ── 표지 메타 정보 스킵 ──
         if skip_cover:
             cover_skip_count += 1
-            if cover_skip_count >= 10:
+            if cover_skip_count >= cover_skip:
                 skip_cover = False
             i += 1
             continue
@@ -405,4 +399,23 @@ def convert(md_path, out_path):
     doc.save(out_path)
     print(f"저장 완료: {out_path}")
 
-convert(MD_PATH, OUT_PATH)
+# ── 산출물 1: 상세 실무 기획서 ──
+convert(
+    MD_PATH, OUT_PATH,
+    'AI-History : 한일과거사 통합디지털 아카이브',
+    '구축 사업 기획(안)',
+    [('작성일', '2026년 6월'),
+     ('작성부서', '행정안전부 사회통합지원과'),
+     ('비고', '내부 기획 검토용 초안')],
+)
+
+# ── 산출물 2: 장관 보고본 (2~3쪽) ──
+convert(
+    "/home/user/BOOKS/기획서/AI-History_장관보고본.md",
+    "/home/user/BOOKS/기획서/AI-History_장관보고본.docx",
+    'AI-History : 한일과거사 통합디지털 아카이브',
+    '장관 보고본',
+    [('작성일', '2026년 6월'),
+     ('작성부서', '행정안전부 사회통합지원과'),
+     ('보고 성격', '장관 보고용 요약본')],
+)
