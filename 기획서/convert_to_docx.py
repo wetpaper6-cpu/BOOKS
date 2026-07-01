@@ -6,8 +6,8 @@ from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 import re
 
-MD_PATH = "/home/user/BOOKS/기획서/강제동원_통합DB_아카이브넷_구축_기획서.md"
-OUT_PATH = "/home/user/BOOKS/기획서/강제동원_통합DB_아카이브넷_구축_기획서.docx"
+MD_PATH = "/home/user/BOOKS/기획서/AI-History_실무기획서.md"
+OUT_PATH = "/home/user/BOOKS/기획서/AI-History_실무기획서.docx"
 
 # ── 유틸리티 ──────────────────────────────────────────────────
 def set_cell_bg(cell, hex_color):
