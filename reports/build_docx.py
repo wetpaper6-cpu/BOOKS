@@ -110,6 +110,30 @@ while i < len(lines):
         i += 1
         continue
 
+    # 마크다운 표 — 연속된 | 행 수집 후 Word 표 생성
+    if stripped.startswith("|"):
+        rows = []
+        while i < len(lines) and lines[i].strip().startswith("|"):
+            cells = [c.strip() for c in lines[i].strip().strip("|").split("|")]
+            if not re.match(r"^[:\-\s]+$", "".join(cells)):  # 구분선(|---|) 제외
+                rows.append(cells)
+            i += 1
+        if rows:
+            ncol = max(len(r) for r in rows)
+            tbl = doc.add_table(rows=len(rows), cols=ncol)
+            tbl.style = "Table Grid"
+            tbl.alignment = 1  # center
+            for ri, r in enumerate(rows):
+                for ci in range(ncol):
+                    cell = tbl.cell(ri, ci)
+                    txt = r[ci] if ci < len(r) else ""
+                    cell.text = ""
+                    p = cell.paragraphs[0]
+                    p.alignment = WD_ALIGN_PARAGRAPH.CENTER if ci > 0 else WD_ALIGN_PARAGRAPH.LEFT
+                    run = p.add_run(txt)
+                    set_font(run, size=8.5, bold=(ri == 0))
+        continue
+
     # 개조식 계층 기호
     first = stripped[0]
     if first == "□":
